@@ -1,0 +1,67 @@
+Type	
+Fetch	Fetch : $Methods
+	fetch:?
+	Fetch:*
+	fetch:Batchallocation.*
+	Fetch:List1,List2
+	
+Source Collection	
+Source Fetch	
+Pre fetch	
+Source prefetch	
+by	
+Aggr compute	
+walk	
+Walk Ex	
+compute var	
+Keep Source	
+search Key	
+$$Collectionfieldby Key	
+Data sorucce	Detailed
+Filter	
+Is odbc table	
+Remote URL	
+xml object path	
+Remote request	
+Format	
+ODBC	
+SQL	
+New Object	
+Compute	
+wald collection	
+End walk	
+Insert Collection Object	
+Compute var	
+Chld of 	
+Belongs to	
+Title	
+Sub Title	
+Collection	
+$$iscollsrcobjchanged	
+rewalk	
+Recompute	
+$$Colsrcobj	
+Secondary sTatus	
+is Client only	
+Parm Var	
+Source Var	
+Compute Var	
+Sorting	
+Max	
+Break on	
+Unique	
+$$NextObject	
+Loop Collection	
+$$LoopCollobj	
+walk Collection	
+For Collection	
+List 684	
+Switch	
+Objects	
+Report	
+trigger 	
+Variable	
+Report	
+Primary Status	
+Secondary sTatus	
+Transaction Type	
