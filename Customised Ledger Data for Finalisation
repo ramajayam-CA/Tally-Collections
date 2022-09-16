@@ -1,0 +1,15 @@
+[Collection: Ramledger]
+	Type			:	Ledger
+	Belongs To		:	Yes	
+	Fetch			:   Name, PartyGSTIN, _Primarygroup, Parent, Openingbalance, Closingbalance,alterid
+	;Is ODBC Table	: 	Yes
+	
+[Collection:ramledgerforauditver3_0]
+	Source Collection:	Ramledger
+	Fetch			:   Name, _Primarygroup, Parent, Openingbalance, Closingbalance, _PrevYearBalance, Isrevenue,PartyGSTIN,Masterid,alterid
+	Compute				:   RComp_Name:##SVCURRENTCOMPANY	
+	Compute				:   Year_Selected_from	:	##SVFromDate
+	Compute				:	Year_Selected_to	:$$Date:$$SystemPeriodTo
+	Compute				: 	Company_number	:$CompanyNumber:Company:##SvCurrentCompany	
+	Compute				: 	Path:##SVCurrentPath
+	Is ODBC Table	: 	Yes
