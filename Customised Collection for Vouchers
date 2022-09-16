@@ -1,0 +1,47 @@
+
+/**********************************************************/
+;Here ALL THE voucher type is called 
+/************
+Last Modified on 12.03.2022
+
+1.yet to fix GSTIN from ledger and voucher  - Fixed
+2. Yet to Mark the debit and credit entries with dr and Cr 
+3. Collection namechanged yet to fix on with the reports 
+
+
+******/
+[Collection: AllVouchers]
+	Type		:	Voucher
+	Belongs To	:	Yes	
+	Filter		:   isnotoptionalvch
+	Filter		:	isnotinventoryvch
+	Fetch		:	VoucherNumber,Date,VoucherTypeName,PartyLedgerName,Narration,Amount,PARTYGSTIN,Masterid,Reference,ReferenceDate,alterid
+	
+
+
+;Select $VoucherNumber,$Date,$VoucherTypeName,$PartyLedgerName,$StockItemName,$BilledQty,$Rate,$Amount,$RWPartyAmt from MyInvColl
+[Collection:Ram_voucher_details_V3_0]
+    Source Collection	:	AllVouchers
+    Walk				:	AllLedgerEntries
+    Compute             :   DrAmount             : If  NOT $$IsDr:$Amount then $Amount else $$Number:"0"         
+    Compute             :   CrAmount             : If  $$IsDr:$Amount then $Amount else $$Number:"0"
+    Fetch				:	VoucherNumber,Date,VoucherTypeName,PartyLedgerName,Narration,PARTYGSTIN,Masterid,Reference,ReferenceDate,Isdeemedpositive,alterid;,RWPartyAmt
+	Fetch				:	LEDGERNAME,Amount;,DrAmount,CrAmount
+	Compute				:   LedParent	: $Parent:Ledger:$LedgerNAme
+	Compute				:   LedPrimaryGroup	: $_PRimaryGroup:Ledger:$LedgerNAme
+	
+	Compute				:	LedGSTIN_from_LedgerMaster	: $partygstin:Ledger:$PartyLedgerName
+	Compute				: 	Key : $$LocaleString:$VoucherTypeName+"-^^-"+ $$LocaleString:$Masterid +"-^^-"+  $$LocaleString:$VoucherNumber
+	Compute				:   hasbankentry:@@hasbankentry
+	Compute				:   RComp_Name:##SVCURRENTCOMPANY	
+	Compute				:   Year_Selected_from	:	##SVFromDate
+	Compute				:	Year_Selected_to	:$$Date:$$SystemPeriodTo
+	Compute				: 	Company_number	:$CompanyNumber:Company:##SvCurrentCompany
+	Compute				:   Led_Master_id	: $Masterid:Ledger:$LedgerNAme
+	Compute				:   Led_Alter_Id	: $Alterid:Ledger:$LedgerNAme
+	
+	
+	Is ODBC Table		: 	Yes
+	
+
+;Select $Vouchernumber, $Date, $VoucherTypeName, $PartyLedgerName, $LEDGERNAME, $Narration, $Isdeemedpositive, $Amount, $DrAmount, $CrAmount, $key, $PARTYGSTIN, $LedGSTIN_from_LedgerMaster, $Masterid, $hasbankentry, $RComp_Name, $Year_Selected_from, $Year_Selected_to, $Company_number, $Reference, $ReferenceDate from Ram_ledgerdetails_GSTCustomised
