@@ -1,12 +1,43 @@
 
-/**********************************************************/
-;Here ALL THE voucher type is called 
-/************
-Last Modified on 12.03.2022
 
-1.yet to fix GSTIN from ledger and voucher  - Fixed
-2. Yet to Mark the debit and credit entries with dr and Cr 
-3. Collection namechanged yet to fix on with the reports 
+/**********************************************************/
+;This collection is writen considering the scope of financial audit functions
+
+/************
+
+BY CA J RAMAJAYAM 
+9566218667
+RAM@RAMAJAYAM.IN
+Last Modified on 18.10.2022 
+
+1. To fix GSTIN from ledger and voucher  - Fixed
+2. To Mark the debit and credit entries with dr and Cr  - Done
+3. Collection namechanged yet to fix on with the reports - Done
+4. To Filter out Memorandum Voucher - Done
+5. Added the GST registration Type - Done
+6. Removed optional and memorandum voucher
+7. Changed the name of the collection to a shorter name
+8. Fixed the issue of narration not fetching
+9. Made the unique code "Key" to the first Field
+10 . Moved all unique key and unique id's to the first in the list
+11. Changed the Debit amounts appearing in the amount column from defalut neatives to postive
+
+
+*********Tested features**************
+
+1. Identify the altered vouchers
+2. Helps in identifying 269SS and 269T transactions in creditors and debtors
+3. Assist to fill Clause 44 of 3CD
+4. Helps in creating sch 3 Balance sheet
+5. Ledger wise voucher list and count
+6. GSTR1 Reconcillation
+7  GSTR2A Recon
+8. GST audits
+9. Track large scale alterations  to the vouchers
+10. Identify back dated vouchers
+11. Helps in regrouping PY balances in Sch 3 
+12. Helps in creating Various Dashboards.
+13. Issues in Relationship Building - Done
 
 
 ******/
@@ -14,34 +45,56 @@ Last Modified on 12.03.2022
 	Type		:	Voucher
 	Belongs To	:	Yes	
 	Filter		:   isnotoptionalvch
-	Filter		:	isnotinventoryvch
-	Fetch		:	VoucherNumber,Date,VoucherTypeName,PartyLedgerName,Narration,Amount,PARTYGSTIN,Masterid,Reference,ReferenceDate,alterid
-	
-
+	Filter		:	isnotinventoryvch,
+	Filter		:	OptionalVouchers,MemorandumVouchers
+	Fetch		:	VoucherNumber,Date,VoucherTypeName,PartyLedgerName,Amount,PARTYGSTIN,Masterid,Reference,ReferenceDate,alterid,natureofvoucher,NatureofTransation,vouhcertypeorigname,hascashflow,Enteredby,Alteredby,Alteredon,depth,voucherid,voucherkey,Vouchertime,UPDATEDDATETIME
+	Compute 	: 	_Narration : $().Narration
+	Compute		: 	Key : $$LocaleString:$VoucherTypeName+"-^^-"+ $$LocaleString:$Masterid +"-^^-"+  $$LocaleString:$VoucherNumber
 
 ;Select $VoucherNumber,$Date,$VoucherTypeName,$PartyLedgerName,$StockItemName,$BilledQty,$Rate,$Amount,$RWPartyAmt from MyInvColl
-[Collection:Ram_voucher_details_V3_0]
+[Collection:Vch6_0]
     Source Collection	:	AllVouchers
     Walk				:	AllLedgerEntries
-    Compute             :   DrAmount             : If  NOT $$IsDr:$Amount then $Amount else $$Number:"0"         
-    Compute             :   CrAmount             : If  $$IsDr:$Amount then $Amount else $$Number:"0"
-    Fetch				:	VoucherNumber,Date,VoucherTypeName,PartyLedgerName,Narration,PARTYGSTIN,Masterid,Reference,ReferenceDate,Isdeemedpositive,alterid;,RWPartyAmt
-	Fetch				:	LEDGERNAME,Amount;,DrAmount,CrAmount
-	Compute				:   LedParent	: $Parent:Ledger:$LedgerNAme
-	Compute				:   LedPrimaryGroup	: $_PRimaryGroup:Ledger:$LedgerNAme
-	
-	Compute				:	LedGSTIN_from_LedgerMaster	: $partygstin:Ledger:$PartyLedgerName
-	Compute				: 	Key : $$LocaleString:$VoucherTypeName+"-^^-"+ $$LocaleString:$Masterid +"-^^-"+  $$LocaleString:$VoucherNumber
-	Compute				:   hasbankentry:@@hasbankentry
-	Compute				:   RComp_Name:##SVCURRENTCOMPANY	
-	Compute				:   Year_Selected_from	:	##SVFromDate
-	Compute				:	Year_Selected_to	:$$Date:$$SystemPeriodTo
-	Compute				: 	Company_number	:$CompanyNumber:Company:##SvCurrentCompany
-	Compute				:   Led_Master_id	: $Masterid:Ledger:$LedgerNAme
-	Compute				:   Led_Alter_Id	: $Alterid:Ledger:$LedgerNAme
-	
-	
+    Compute             :   DrAmount            		    : If   $$IsDr:$Amount then $$AsAmount:$Amount else $$Number:"0"         
+    Compute             :   CrAmount             			: If  NOT $$IsDr:$Amount then $$Asamount:$Amount else $$Number:"0"
+	Fetch				:	key,Masterid,Alterid,voucherid,voucherkey,VoucherNumber,Date,VoucherTypeName,_Narration,Reference,ReferenceDate,Isdeemedpositive,natureofvoucher,hascashflow,Enteredby,Alteredby,Alteredon,depth,Vouchertime,UPDATEDDATETIME,LEDGERNAME,Amount
+	Compute				:   Ledger_Parent					: $Parent:Ledger:$LedgerNAme
+	Compute				:   Ledger_PrimaryGroup				: $_PRimaryGroup:Ledger:$LedgerNAme
+	Compute				:	Party_LedgerName 				: $().PartyLedgerName
+	Compute				: 	PARTY_GST_number  				: $().PARTYGSTIN
+	Compute				:	Ledger_Master_GST_Number		: $partygstin:Ledger:$PartyLedgerName
+	Compute				:   LedgerMasterGSTINGSTINtype		: $GSTregistrationtype:Ledger:$PartyLedgerName
+	Compute				:   hasbankentry					: @@hasbankentry
+	Compute				:   RComp_Name						: ##SVCURRENTCOMPANY	
+	Compute				:   Year_Selected_from				: ##SVFromDate
+	Compute				:	Year_Selected_to				: $$Date:$$SystemPeriodTo
+	Compute				: 	Company_number					: $CompanyNumber:Company:##SvCurrentCompany
+	Compute				:   Led_Master_id					: $Masterid:Ledger:$LedgerNAme
+	Compute				:   Led_Alter_Id					: $Alterid:Ledger:$LedgerNAme
+	Compute				:   Led_IS_Revenue					: $Isrevenue:Ledger:$LedgerName
+	Compute				: 	Path_of_the_CurrentCompany		: ##SVCurrentPath
 	Is ODBC Table		: 	Yes
 	
+[System : Formulae]
+OptionalVouchers : $IsOptional = No
+MemorandumVouchers :$IsMemoVch = No
 
-;Select $Vouchernumber, $Date, $VoucherTypeName, $PartyLedgerName, $LEDGERNAME, $Narration, $Isdeemedpositive, $Amount, $DrAmount, $CrAmount, $key, $PARTYGSTIN, $LedGSTIN_from_LedgerMaster, $Masterid, $hasbankentry, $RComp_Name, $Year_Selected_from, $Year_Selected_to, $Company_number, $Reference, $ReferenceDate from Ram_ledgerdetails_GSTCustomised
+[Collection: R_ledger]
+	Type			:	Ledger
+	Belongs To		:	Yes	
+	Fetch			:   Name, PartyGSTIN, _Primarygroup, Parent, Openingbalance, Closingbalance,alterid
+	
+[Collection:LEd_Det_6_0]
+	Source Collection	:	R_ledger
+	Fetch				:   Name, _Primarygroup, Parent, Openingbalance, Closingbalance, _PrevYearBalance, Isrevenue,PartyGSTIN,Masterid,alterid
+	Compute				:   RComp_Name				:##SVCURRENTCOMPANY	
+	Compute				:   Year_Selected_from		:##SVFromDate
+	Compute				:	Year_Selected_to		:$$Date:$$SystemPeriodTo
+	Compute				: 	Company_number			:$CompanyNumber:Company:##SvCurrentCompany	
+	Compute				: 	Path					:##SVCurrentPath
+	Is ODBC Table		: 	Yes
+
+
+	
+
+ 
